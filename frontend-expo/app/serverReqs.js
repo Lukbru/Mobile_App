@@ -31,3 +31,26 @@ export async function fetchProducts() {
     });
     return res.json();
 }
+
+export async function fetchCategories() {
+    const res = await fetch (`${API_IP}/category`);
+    return await res.json();
+}
+
+export async function addCategory(data) {
+    const res = await fetch(`${API_IP}/category`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    return res.json();
+}
+
+export async function addProduct(data) {
+    const res = await fetch(`${API_IP}/app/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    return res.json();
+}
