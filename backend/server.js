@@ -20,18 +20,28 @@ const client = new MongoClient(uri, {
       deprecationErrors: true,
     }
   });
-  let db;
 
+  let db;
+  let category_collection;
+  let product_collection;
+  let users;
+  
   async function connectMongoDB() {
     try {
         await client.connect();
         db = client.db('Mobile_App');
         console.log("Connected to MongoDB");
+ 
+        category_collection = db.collection('Categories');
+        users = db.collection('Users');
+        product_collection = db.collection('Products');
+
     } catch (error) {
         console.error("Error connecting to MongoDB:", error);
     }
   }
   connectMongoDB();
+
 
   function generateToken(req, res, next) {
     const header = req.headers.authorization;
@@ -54,7 +64,6 @@ app.post('/register', async (req, res) => {
         if (!name || !password || !email) {
             return res.status(400).json({ message: 'Name, email and password are required' });
         }
-        const users = db.collection('Users');
         const existingUser = await users.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
@@ -70,7 +79,6 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
     try {
         const { password, email } = req.body;
-        const users = db.collection('Users');
         const user = await users.findOne({ email });
         if (!user) {
             return res.status(400).json({ message: 'Name, email and password are required' });
@@ -89,12 +97,58 @@ app.post('/login', async (req, res) => {
 
 app.get("/app/products", generateToken, async (req, res) => {
     try {
-        const products = db.collection('Products').find().toArray();
-        res.json(products);
+        const products = await product_collection.find().toArray();
+        res.json({products});
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: 'Server error' });
     }
 });
+
+app.post("/app/products", async (req, res) => {
+    try {
+        const { name, description, price, categoryId, imageUrl } = req.body;
+        if (!name || !price || !categoryId) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+    const product = { name, description: description || "", price, categoryId: new ObjectId(categoryId),imageUrl: imageUrl || null, createdAt: new Date() };
+    const result = await product_collection.insertOne(product);
+    res.status(201).json({ id: result.insertedId });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get("/app/products/:id", async (req, res) => {
+    try {
+        const categoryId = req.params.id;
+        const products = await product_collection.find({ categoryId: new ObjectId(categoryId) }).toArray();
+        res.json(products);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get('/category', async (req, res) => { // Pobieranie wszystkich kategorii
+    const categories = await category_collection.find({}, { sort: {level: 1} }).toArray();
+    res.json(categories);
+});
+
+app.post('/category', async (req, res) => {  // Dodawanie nowej kategorii
+    const {name, level, parentCategoryId} = req.body;
+    if (!name || typeof level !== 'number'){
+      return res.status(400).json({ message: 'Wrong inputs - please try again.'})
+    }
+  
+    const newCategory = {name, level, parentCategoryId: level<2?null:parentCategoryId};
+    const categbox = await category_collection.insertOne(newCategory);
+    res.status(200).json({
+      id: categbox.insertedId
+    });
+});
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
