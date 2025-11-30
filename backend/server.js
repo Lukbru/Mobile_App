@@ -25,6 +25,7 @@ const client = new MongoClient(uri, {
   let category_collection;
   let product_collection;
   let users;
+  let cart_collection;
   
   async function connectMongoDB() {
     try {
@@ -35,6 +36,7 @@ const client = new MongoClient(uri, {
         category_collection = db.collection('Categories');
         users = db.collection('Users');
         product_collection = db.collection('Products');
+        cart_collection = db.collection('Cart');
 
     } catch (error) {
         console.error("Error connecting to MongoDB:", error);
@@ -87,8 +89,8 @@ app.post('/login', async (req, res) => {
         if (!isPasswordValid) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
-        const token = jwt.sign({ id: user._id.toString(), email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-        res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
+        const token = jwt.sign({ _id: user._id.toString(), email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+        res.json({ token, user: { _id: user._id, name: user.name, email: user.email } });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Server error' });
@@ -149,6 +151,47 @@ app.post('/category', async (req, res) => {  // Dodawanie nowej kategorii
     });
 });
 
+app.post('/cart', async (req, res) => {
+    try {
+        const { userId, productId, price, email } = req.body;
+        if (!userId || !productId || !price || !email) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+        const cartItems = { userId, productId, price, email, createdAt: new Date() };
+        await cart_collection.insertOne(cartItems);
+        res.status(201).json({ message: 'Item added to cart' });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get('/cart/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const cartItems = await cart_collection.aggregate([
+            { $match: { userId: userId } },
+            { $lookup: {
+                from: 'Products',
+                let: { prodId: { $toObjectId: "$productId" } },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ["$_id", "$$prodId"] } } }
+                    ],
+                as: 'product'
+            }},
+            { $unwind: '$product' }
+        ]).toArray();
+        res.json(cartItems);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.delete('/cart/:id', async (req, res) => {
+    await cart_collection.deleteOne({ _id: new ObjectId(req.params.id) });
+    res.status(200).json({ message: 'Item removed from cart' });
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
