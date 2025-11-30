@@ -28,3 +28,22 @@ export function getAllSubCategoryIds(categoryId, categories) {
     find(categoryId);
     return ids;
 }
+
+export function CategoryListUi({ categories, level = 1}) {
+    if (!categories || categories.length === 0) return null;
+
+    return (
+        <ol className='list-group listgroup-numbered'>
+            {categories.map(cat => (
+                < li key={cat._id}>
+                    {cat.name}
+                    {cat.children.length > 1 && (
+                        <div>
+                            <CategoryListUi categories={cat.children} level={level + 1} />
+                        </div>
+                    )}
+                </li>
+            ))}
+        </ol>
+    );
+}

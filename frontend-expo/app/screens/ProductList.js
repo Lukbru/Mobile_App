@@ -1,9 +1,9 @@
 import {useState, useEffect} from "react";
-import {TextInput, ScrollView, View, Text, StyleSheet, FlatList, Image} from "react-native";
-import {fetchProducts, fetchCategories} from '../serverReqs';
-import { Picker } from '@react-native-picker/picker';
+import {TextInput, ScrollView, View, Text, StyleSheet, FlatList, Image, Button} from "react-native";
+import {fetchProducts, fetchCategories, addToCart} from '../serverReqs';
 import CategoryTree from "../categoryTree";
 import { getAllSubCategoryIds } from "../categoryTreeBuild";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ProductList({ navigation }) {
     const [products, setProducts] = useState([]);
@@ -54,6 +54,19 @@ export default function ProductList({ navigation }) {
         setSelectedCategoryIds(ids);
     }
 
+    const addItemToCart = async (products) => {
+        const loggedUser = await AsyncStorage.getItem('user');
+        if (!loggedUser) return
+        const user = JSON.parse(loggedUser);
+        const body = {
+            userId: user._id,
+            productId: products._id,
+            price: products.price,
+            email: user.email
+        }
+        const res = await addToCart(body);
+    }
+
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <Text style={styles.title}>Product List</Text>
@@ -66,6 +79,7 @@ export default function ProductList({ navigation }) {
                     {item.imageUrl ? <Image source = {{uri: item.imageUrl}} style = {styles.productImage} resizeMode="contain"/> : null}
                     <Text>{item.description}</Text>
                     <Text>{item.price} zł</Text>
+                    <Button title="Add to Cart" color='#6ea72aff' onPress={() => addItemToCart(item)} />
                 </View>
             )}/>
         </ScrollView>

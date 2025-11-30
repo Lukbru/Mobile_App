@@ -29,7 +29,7 @@ function CategoryNode({ category, level, categories, onSelectCategory }) {
         <View style={{ marginLeft: level * 10, borderColor: 'black', borderWidth: level > 0? 0 : 1, borderRadius: 6, padding: level > 0? 0 : 5 }}>
             <TouchableOpacity onPress={opPressed} style={{ paddingVertical: 5 }}>
                 <Text>
-                 {category.children.length>0?(open?"▼ " : "► ") : "• "}
+                 {category.children.length>0?(open?"V " : "> ") : "• "}
                  {category.name}
                 </Text>
             </TouchableOpacity>

@@ -2,6 +2,7 @@ import React, {useState, useEffect} from "react";
 import {ScrollView, View, Text, StyleSheet, Button, TextInput, FlatList, Image} from "react-native";
 import {fetchCategories, addCategory, addProduct} from '../serverReqs';
 import { Picker } from '@react-native-picker/picker';
+import {CategoryListUi, buildCategoryTree} from '../categoryTreeBuild';
 
 export default function AdminUi() {
     //  Category
@@ -57,6 +58,10 @@ export default function AdminUi() {
             alert(result.message);
         }
     };
+
+    const tree = buildCategoryTree(categories);
+    const displayCategoryTree = () => ( <CategoryListUi categories = {tree} /> );
+
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.title}>Admin Panel</Text>
@@ -88,12 +93,10 @@ export default function AdminUi() {
             </Picker>
             <Button title="Add Product" onPress={addProducts}/>
             <View style={styles.divider}/>
+            <div style={{borderColor:'black', borderStyle:'solid', padding:5, borderRadius:6}}>
             <Text style={styles.sectionTitle}>Existing Categories</Text>
-            <FlatList data={categories} keyExtractor={(item) => item._id} renderItem={({item}) => (
-                <Text style={{padding:5}}>
-                    {Array(item.level).fill('-').join('')} {item.name}
-                </Text>
-            )}/>
+            {displayCategoryTree()}
+            </div>
         </ScrollView>
     );
 }

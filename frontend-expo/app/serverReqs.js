@@ -20,6 +20,7 @@ export async function loginUser(email, password) {
     const data = await res.json();
     if (data.token) {
         await AsyncStorage.setItem('token', data.token);
+        await AsyncStorage.setItem('user', JSON.stringify(data.user));
     }
     return data;
 }
@@ -51,6 +52,30 @@ export async function addProduct(data) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
+    });
+    return res.json();
+}
+
+export async function addToCart({userId, productId, price, email}) {
+    const res = await fetch(`${API_IP}/cart`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({userId, productId, price, email}),
+    });
+    return res.json();
+}
+
+export async function fetchCart(userId) {
+    const res = await fetch(`${API_IP}/cart/${userId}`, {
+        headers: { 'Content-Type': 'application/json' },
+    });
+    return res.json();
+}
+
+export async function removeFromCart(cartItemId) {
+    const res = await fetch(`${API_IP}/cart/${cartItemId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
     });
     return res.json();
 }
