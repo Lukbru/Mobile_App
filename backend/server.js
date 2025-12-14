@@ -72,7 +72,7 @@ app.post('/register', async (req, res) => {
         }
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = await users.insertOne({ name, email, password: hashedPassword });
-        res.status(201).json({ message: 'User registered successfully' });
+        res.status(201).json({ success: 'User registered successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
@@ -159,7 +159,7 @@ app.post('/cart', async (req, res) => {
         }
         const cartItems = { userId, productId, price, email, createdAt: new Date() };
         await cart_collection.insertOne(cartItems);
-        res.status(201).json({ message: 'Item added to cart' });
+        res.status(201).json({ success: 'Item added to cart' });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Server error' });
