@@ -13,6 +13,7 @@ export default function ProductList({ navigation }) {
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [selectedCategoryIds, setSelectedCategoryIds] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
+    const [popup, setPopup] = useState('');
 
     useEffect(() => {
         fetchProducts().then(product => {
@@ -65,10 +66,24 @@ export default function ProductList({ navigation }) {
             email: user.email
         }
         const res = await addToCart(body);
+        if (res.success) {
+            showPopup('Product added to cart');
+        }
+    }
+
+    const showPopup = (message) => {
+        setPopup(message);
+        setTimeout(() => setPopup(''), 1200);
     }
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
+            {popup !== '' && ( <View style={styles.popupContainer}>
+                <View style={styles.popupBox}>
+                    <Text style={styles.popupText}>{popup}</Text>
+                </View>
+            </View>
+             )}
             <Text style={styles.title}>Product List</Text>
             {error ? <Text style={styles.error}>{error}</Text> : null}
             <TextInput placeholder="Search Products..." value={search} onChangeText={setSearch} style={styles.input} />
@@ -94,5 +109,8 @@ const styles = StyleSheet.create({
     error: {color: 'red', marginBottom: 10, textAlign: 'center'},
     productImage : {width: '100%', height: 200, marginBottom: 10, borderRadius: 8},
     input: {borderWidth: 1, padding: 10, marginBottom: 10, borderRadius: 6},
+    popupContainer: {position: 'absolute',top: 0,left: 0,right: 0,bottom: 0,justifyContent: 'center',alignItems: 'center',zIndex: 999},
+    popupBox: {backgroundColor: '#c5e799ff', paddingVertical: 15, paddingHorizontal: 25, borderRadius: 12,shadowColor: '#000',shadowOpacity: 0.5,shadowRadius: 10,elevation: 8,borderWidth: 1,borderColor: '#302f2fff'},
+    popupText: {fontSize: 16,fontWeight: 'bold',color: 'green'},
 });
 

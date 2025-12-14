@@ -22,7 +22,7 @@ return (
         <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail}/>
         <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry/>
         <Button title="Login" onPress={handleLogin}/>
-        <Text onPress ={() => navigation.navigate('Register')}>c
+        <Text onPress ={() => navigation.navigate('Register')} style={{ color: 'blue'}}>
             Create account
         </Text>
     </View>
