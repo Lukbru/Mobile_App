@@ -1,5 +1,5 @@
 import {useState, useEffect} from "react";
-import {TextInput, ScrollView, View, Text, StyleSheet, FlatList, Image, Button} from "react-native";
+import {TextInput, ScrollView, View, Text, StyleSheet, FlatList, Image, Button, TouchableOpacity } from "react-native";
 import {fetchProducts, fetchCategories, addToCart} from '../serverReqs';
 import CategoryTree from "../categoryTree";
 import { getAllSubCategoryIds } from "../categoryTreeBuild";
@@ -91,7 +91,9 @@ export default function ProductList({ navigation }) {
             <FlatList data={filteredProducts} keyExtractor={(item) => item._id.toString()} renderItem={({item}) => (
                 <View style={styles.item}>
                     <Text style={styles.name}>{item.name}</Text>
-                    {item.imageUrl ? <Image source = {{uri: item.imageUrl}} style = {styles.productImage} resizeMode="contain"/> : null}
+                    {item.imageUrl ? ( <TouchableOpacity onPress={()=>navigation.navigate("ProductDetails", {product: item})}>
+                    <Image source={{uri: item.imageUrl}} style={styles.productImage} resizeMode="contain"/>
+                    </TouchableOpacity>) : null}
                     <Text>{item.description}</Text>
                     <Text>{item.price} zł</Text>
                     <Button title="Add to Cart" color='#6ea72aff' onPress={() => addItemToCart(item)} />
